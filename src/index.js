@@ -40,9 +40,12 @@ class Board extends Component {
     const rows = 3, columns = 3 // 3行3列
     const squares = Array.from({length: rows}, () => Array(columns).fill(null))
     this.state = {
+      winner: null,
       squares,
       executionOrder: [],
-      nextSide: 'X'
+      nextSide: 'X',
+      rows,
+      columns
     }
     this.handleClick = this.handleClick.bind(this)
   }
@@ -55,25 +58,66 @@ class Board extends Component {
     newSquares[rowIndex][columnIndex] = nextSide
     const newExecutionOrder = [...executionOrder]
     newExecutionOrder.push([rowIndex, columnIndex])
+    // rowIndex, columnIndex, sideName
+    const {result} = this.isGameOver(rowIndex, columnIndex, nextSide)
     const theNextSide = this.getNextSide(nextSide)
     this.setState({
       squares: newSquares,
       executionOrder: newExecutionOrder,
-      nextSide: theNextSide
+      nextSide: theNextSide,
+      winner: result ? nextSide : null
     })
   }
-  // renderSquare(rowIndex, columnIndex) {
-  //   return (
-  //     <Square
-  //       key={columnIndex}
-  //       value={this.state.squares[rowIndex][columnIndex]}
-  //       onClick={() => this.handleClick(rowIndex, columnIndex)}
-  //     />
-  //   )
-  // }
+
+  getSameStyleNumber(state, rowIndex, columnIndex, nodes = [], count = 1) {
+    const {directions, squares, rows, columns, sideName} = state
+    const judgeRowIndex = columnIndex + directions[0], judgeColumnIndex = rowIndex + directions[1]
+    const isEffectiveCoordinate = judgeRowIndex >=0 && judgeRowIndex < columns && judgeColumnIndex >= 0 && judgeColumnIndex < rows
+    let hasSameSide = false
+    if(sideName && isEffectiveCoordinate) {
+      hasSameSide = sideName === squares[judgeRowIndex][judgeColumnIndex]
+    }
+    if(hasSameSide) {
+      const sameSideNodes = nodes.map(item => item.slice()) // 生成一个新的数组
+      sameSideNodes.push([judgeRowIndex, judgeColumnIndex])
+      return this.getSameStyleNumber(state, judgeRowIndex, judgeColumnIndex, sameSideNodes, count + 1)
+    }
+    return {count, nodes}
+  }
+
+  isGameOver (rowIndex, columnIndex, sideName) {
+    const winCountNumber = 3
+    const {squares, rows, columns} = this.state
+    // [x, y] 轴
+    const checkStyle = [
+      [[-1, 1], [1, -1]], // y = -x
+      [[0, 1], [0, -1]],  // x = 0
+      [[1, 1], [-1, -1]], // y = x
+      [[1, 0], [-1, 0]]   // y = 0
+    ]
+    const judgeState = {squares, rows, columns, sideName} // directions
+    console.log('judgeState', judgeState)
+    let result = false
+    let sameSideNodes = []
+    for(let sameDirections of checkStyle.values()) {
+      let sameSideCount = 0
+      sameDirections.forEach(checkDirectionsItem => {
+        judgeState.directions = checkDirectionsItem
+        const {count, nodes} = this.getSameStyleNumber(judgeState, rowIndex, columnIndex)
+        // const {count} = this.getSameStyleNumber(judgeState, rowIndex, columnIndex, [...checkDirectionsItem])
+        sameSideCount += count
+        sameSideNodes = nodes
+      })
+      if(sameSideCount >= winCountNumber) {
+        result = true
+        break
+      }
+    }
+    return {result, nodes: sameSideNodes}
+  }
 
   render() {
-    const winner = null
+    const {squares, winner} = this.state
     let status
     const disabled = !!winner
     if(winner) {
@@ -81,7 +125,6 @@ class Board extends Component {
     } else {
       status = 'Next player: ' + this.state.nextSide
     }
-    const {squares} = this.state
     return (
       <div>
         <ShoppingList name='[shopping list test]' />
