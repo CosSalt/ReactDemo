@@ -45,7 +45,9 @@ class Board extends Component {
       executionOrder: [],
       nextSide: 'X',
       rows,
-      columns
+      columns,
+      stepCount: 0,
+      isGameOver: false
     }
     this.handleClick = this.handleClick.bind(this)
   }
@@ -53,32 +55,38 @@ class Board extends Component {
     return nowSide === 'X' ? 'O' : 'X'
   }
   handleClick (rowIndex, columnIndex) {
-    const {squares, executionOrder, nextSide = 'X'} = this.state
+    const {squares, executionOrder, rows, columns, nextSide = 'X'} = this.state
     const newSquares = [...squares]
     newSquares[rowIndex][columnIndex] = nextSide
     const newExecutionOrder = [...executionOrder]
     newExecutionOrder.push([rowIndex, columnIndex])
-    // rowIndex, columnIndex, sideName
     const {result} = this.isGameOver(rowIndex, columnIndex, nextSide)
     const theNextSide = this.getNextSide(nextSide)
+    const stepCount = this.state.stepCount + 1
+    const isGameOver = result || rows * columns <= stepCount
     this.setState({
       squares: newSquares,
       executionOrder: newExecutionOrder,
       nextSide: theNextSide,
-      winner: result ? nextSide : null
+      winner: result ? nextSide : null,
+      isGameOver,
+      stepCount
     })
   }
 
-  getSameStyleNumber(state, rowIndex, columnIndex, nodes = [], count = 1) {
+  getSameStyleNumber(state, rowIndex, columnIndex, nodes = [], count = 0) {
     const {directions, squares, rows, columns, sideName} = state
-    const judgeRowIndex = columnIndex + directions[0], judgeColumnIndex = rowIndex + directions[1]
+    const judgeRowIndex = rowIndex + directions[0], judgeColumnIndex = columnIndex + directions[1]
     const isEffectiveCoordinate = judgeRowIndex >=0 && judgeRowIndex < columns && judgeColumnIndex >= 0 && judgeColumnIndex < rows
     let hasSameSide = false
     if(sideName && isEffectiveCoordinate) {
       hasSameSide = sideName === squares[judgeRowIndex][judgeColumnIndex]
     }
     if(hasSameSide) {
-      const sameSideNodes = nodes.map(item => item.slice()) // 生成一个新的数组
+      // 生成一个新的数组,房子变量相互影响
+      const sameSideNodes = nodes.map(item => {
+        return item.slice()
+      })
       sameSideNodes.push([judgeRowIndex, judgeColumnIndex])
       return this.getSameStyleNumber(state, judgeRowIndex, judgeColumnIndex, sameSideNodes, count + 1)
     }
@@ -87,8 +95,7 @@ class Board extends Component {
 
   isGameOver (rowIndex, columnIndex, sideName) {
     const winCountNumber = 3
-    const {squares, rows, columns} = this.state
-    // [x, y] 轴
+    const {squares, rows, columns, stepCount} = this.state
     const checkStyle = [
       [[-1, 1], [1, -1]], // y = -x
       [[0, 1], [0, -1]],  // x = 0
@@ -96,18 +103,18 @@ class Board extends Component {
       [[1, 0], [-1, 0]]   // y = 0
     ]
     const judgeState = {squares, rows, columns, sideName} // directions
-    console.log('judgeState', judgeState)
     let result = false
     let sameSideNodes = []
     for(let sameDirections of checkStyle.values()) {
-      let sameSideCount = 0
+      let sameSideCount = 1
       sameDirections.forEach(checkDirectionsItem => {
         judgeState.directions = checkDirectionsItem
         const {count, nodes} = this.getSameStyleNumber(judgeState, rowIndex, columnIndex)
-        // const {count} = this.getSameStyleNumber(judgeState, rowIndex, columnIndex, [...checkDirectionsItem])
+        // const {count} = this.getSameStyleNumber(judgeState, rowIndex, columnIndex, [[rowIndex, columnIndex]])
         sameSideCount += count
         sameSideNodes = nodes
       })
+      sameSideNodes.push([rowIndex, columnIndex])
       if(sameSideCount >= winCountNumber) {
         result = true
         break
@@ -117,11 +124,13 @@ class Board extends Component {
   }
 
   render() {
-    const {squares, winner} = this.state
+    const {squares, winner, isGameOver} = this.state
     let status
-    const disabled = !!winner
+    const disabled = !!winner || isGameOver
     if(winner) {
       status = 'Game Over, winner is ' + winner
+    } else if(isGameOver){ // 平局,即所有的空间被用完了,但未有赢家
+      status = 'Game Over, The game has drawn'
     } else {
       status = 'Next player: ' + this.state.nextSide
     }
