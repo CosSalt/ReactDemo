@@ -1,7 +1,8 @@
-import React, {Component} from 'react'
+import React, {Component, Fragment} from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
 import ShoppingList from './shoppingList.js'
+import CommentApp from './CommentApp/CommentApp'
 
 function Square(props) {
   const val = props.value
@@ -37,7 +38,7 @@ function Square(props) {
 class Board extends Component {
   constructor() {
     super()
-    const rows = 3, columns = 3 // 3行3列
+    const rows = 10, columns = 10 // 3行3列
     const squares = Array.from({length: rows}, () => Array(columns).fill(null))
     this.state = {
       winner: null,
@@ -94,7 +95,7 @@ class Board extends Component {
   }
 
   isGameOver (rowIndex, columnIndex, sideName) {
-    const winCountNumber = 3
+    const winCountNumber = 5
     const {squares, rows, columns, stepCount} = this.state
     const checkStyle = [
       [[-1, 1], [1, -1]], // y = -x
@@ -182,7 +183,16 @@ class Game extends Component {
 
 // ========================================
 
+// ReactDOM.render(
+//   <Game />,
+//   document.getElementById('root')
+// )
+
+// CommentApp
 ReactDOM.render(
-  <Game />,
+  <Fragment>
+    <h2> CommentApp </h2>
+    <CommentApp />
+  </Fragment>,
   document.getElementById('root')
 )
