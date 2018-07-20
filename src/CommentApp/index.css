@@ -93,6 +93,14 @@ body {
   flex-shrink: 0;
 }
 
+.comment .comment-username {
+  padding-right: 5px;
+}
+
+.comment .comment-content {
+  margin-left: 5px;
+}
+
 .comment span {
   color: #00a3cf;
   font-style: italic;

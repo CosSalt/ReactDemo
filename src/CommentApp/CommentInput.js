@@ -19,8 +19,18 @@ class CommentInput extends Component {
   textareaClick = (e) => {
     this.valueChange('content', e.target.value)
   }
+  handleSubmit = () => {
+    const {onSubmit} = this.props
+    if(onSubmit) {
+      const {username, content} = this.state
+      onSubmit({username, content})
+    }
+    this.valueChange('content', '')
+  }
   render () {
     const {content, username} = this.state
+    const isDisabled = !username || !content
+    const disabledStyle = isDisabled ? {cursor: 'not-allowed'} : null
     return (
       <div className='comment-input'>
         <div className='comment-field'>
@@ -40,7 +50,11 @@ class CommentInput extends Component {
           </div>
         </div>
         <div className="comment-field-button">
-          <button>
+          <button
+            onClick={this.handleSubmit}
+            disabled={isDisabled}
+            style={disabledStyle}
+          >
             发布
           </button>
         </div>
