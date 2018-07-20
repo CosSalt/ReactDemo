@@ -47,8 +47,7 @@ class CommentApp extends Component {
     })
   }
 
-  _autoUpdateTimeString = () => {
-    let {comments} = this.state
+  _autoUpdateTimeString = (comments = this.state.comments) => {
     const key = 'comments'
     comments = this._updateTimeString(comments)
     this._stateChange(key, comments)
@@ -64,6 +63,7 @@ class CommentApp extends Component {
       [propName]: val
     })
     if(propName === 'comments') {
+      if(!val || val.length <= 0) debugger
       this._saveLocalStorage(propName, JSON.stringify(val))
     }
   }
@@ -82,11 +82,18 @@ class CommentApp extends Component {
     }
     return res
   }
+
+  handleDeleteComment = (index) => {
+    const key = 'comments'
+    let comments = [...this.state.comments]
+    comments.splice(index, 1)
+    this._stateChange(key, comments)
+  }
   
   handleSubmit = (data = {}) => {
     const comments = [...this.state.comments]
     const len = comments.length
-    data.id = data.username + '_' + len
+    data.id = Date.now().toString() // 时间戳作为ID
     data.timeString = this._getTimeString(0)
     comments.push(data)
     this._stateChange('comments', comments)
@@ -96,7 +103,10 @@ class CommentApp extends Component {
     return (
       <div className='wrapper'>
         <CommentInput onSubmit={this.handleSubmit}/>
-        <CommentList comments={comments} />
+        <CommentList
+          comments={comments} 
+          onDeleteComment={this.handleDeleteComment}
+        />
       </div>
     )
   }
