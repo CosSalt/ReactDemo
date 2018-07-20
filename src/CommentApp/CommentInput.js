@@ -8,25 +8,69 @@ class CommentInput extends Component {
       content: ''
     }
   }
-  valueChange(propName, val) {
+
+  componentWillMount () {
+    const key = 'username'
+    const {username} = this._getFromLocalStorage(key)
+    if(username) {
+      this._valueChange(key, username)
+    }
+  }
+
+  componentDidMount () {
+    this.textareaEl.focus()
+  }
+
+  _saveToLocalStorage (key, val) {
+    localStorage.setItem(key, val)
+  }
+
+  _getFromLocalStorage(key) {
+    const res = {}
+    const getItem = (itemKey) => localStorage.getItem(itemKey)
+    if (key) {
+      if(typeof key === 'string') {
+        res[key] = getItem(key)
+      } else if(Array.isArray(key)) {
+        key.forEach(theKey => {
+          res[theKey] = getItem(theKey)
+        })
+      } 
+    }
+    return res
+  }
+
+  _valueChange(propName, val) {
     this.setState({
       [propName]: val
     })
   }
-  inputClick = (e) => {
-    this.valueChange('username', e.target.value)
+
+  handleInputClick = (e) => {
+    this._valueChange('username', e.target.value)
   }
-  textareaClick = (e) => {
-    this.valueChange('content', e.target.value)
+
+  handleTextareaClick = (e) => {
+    this._valueChange('content', e.target.value)
   }
+
   handleSubmit = () => {
     const {onSubmit} = this.props
     if(onSubmit) {
       const {username, content} = this.state
-      onSubmit({username, content})
+      onSubmit({
+        username,
+        content,
+        createdTime: +new Date()
+      })
     }
-    this.valueChange('content', '')
+    this._valueChange('content', '')
   }
+
+  handleNameBlur = (e) => {
+    this._saveToLocalStorage('username', e.target.value)
+  }
+
   render () {
     const {content, username} = this.state
     const isDisabled = !username || !content
@@ -37,15 +81,17 @@ class CommentInput extends Component {
           <span className='comment-field-name'>用户名: </span>
           <div className="comment-field-input">
             <input value={username} 
-              onChange={this.inputClick}
+              onBlur={this.handleNameBlur}
+              onChange={this.handleInputClick}
             />
           </div>
         </div>
         <div className="comment-field">
           <span className="comment-field-name">评论内容: </span>
           <div className="comment-field-input">
-            <textarea value={content} 
-              onChange={this.textareaClick}
+            <textarea value={content}
+              ref={(e) => this.textareaEl = e}
+              onChange={this.handleTextareaClick}
             />
           </div>
         </div>

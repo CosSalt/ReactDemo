@@ -5,13 +5,13 @@ class CommentList extends Component {
   static defaultProps = {
     comments: []
   }
-  filterProps (data = {}) {
+  _filterProps (data = {}) {
     const {id, ...args} = data
     return args
   }
   render() {
     const comments = this.props.comments
-    const filterProps = this.filterProps
+    const filterProps = this._filterProps
     return (
       <div>
         {
