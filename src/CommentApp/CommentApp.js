@@ -20,7 +20,6 @@ class CommentApp extends Component {
   }
   
   componentWillMount () {
-    // const {comments} = this._getFromLocalStorage('comments')
     const {comments} = this.state
     if (comments) {
       this._autoUpdateTimeString(comments)

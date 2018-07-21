@@ -1,19 +1,18 @@
 import React,{ Component } from 'react'
+import fnWrapLocalStorage from '../HigherComponent/fnWrapLocalStorage'
+import PropTypes from 'prop-types'
 
 class CommentInput extends Component {
+  static propTypes = {
+    data: PropTypes.any,
+    saveData: PropTypes.func.isRequired
+  }
+
   constructor (props) {
     super(props)
     this.state = {
-      username: '',
+      username: props.data,
       content: ''
-    }
-  }
-
-  componentWillMount () {
-    const key = 'username'
-    const {username} = this._getFromLocalStorage(key)
-    if(username) {
-      this._valueChange(key, username)
     }
   }
 
@@ -21,8 +20,10 @@ class CommentInput extends Component {
     this.textareaEl.focus()
   }
 
-  _saveToLocalStorage (key, val) {
-    localStorage.setItem(key, val)
+  _saveToLocalStorage = (key, val) => {
+    // localStorage.setItem(key, val)
+    if(!key) return
+    this.props.saveData(val)
   }
 
   _getFromLocalStorage(key) {
@@ -108,5 +109,7 @@ class CommentInput extends Component {
     )
   }
 }
+
+CommentInput = fnWrapLocalStorage(CommentInput, 'username')
 
 export default CommentInput
