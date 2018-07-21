@@ -1,21 +1,29 @@
 import React,{Component} from 'react'
 import CommentInput from './CommentInput'
 import CommentList from './CommentList'
+import PropTypes from 'prop-types'
+import fnWrapLocalStorage from '../HigherComponent/fnWrapLocalStorage'
 import './index2.css'
 import './myIndex.css'
 
 class CommentApp extends Component {
-  constructor () {
-    super()
+  static propTypes = {
+    data: PropTypes.any,
+    saveData: PropTypes.func.isRequired
+  }
+
+  constructor (props) {
+    super(props)
     this.state = {
-      comments: []
+      comments: props.data
     }
   }
   
   componentWillMount () {
-    const {comments} = this._getFromLocalStorage('comments')
+    // const {comments} = this._getFromLocalStorage('comments')
+    const {comments} = this.state
     if (comments) {
-      this._autoUpdateTimeString(JSON.parse(comments))
+      this._autoUpdateTimeString(comments)
     }
     this._timeUpdateTimer = setInterval(this._autoUpdateTimeString, 5000)
   }
@@ -55,16 +63,17 @@ class CommentApp extends Component {
 
   _saveLocalStorage(key, val) {
     if (!key) return
-    localStorage.setItem(key, val)
+    this.props.saveData(val)
+    // localStorage.setItem(key, val)
   }
 
-  _stateChange(propName, val) {
+  _stateChange(propName, val, needSave = false) {
     this.setState({
       [propName]: val
     })
-    if(propName === 'comments') {
+    if(needSave && propName === 'comments') {
       if(!val || val.length <= 0) debugger
-      this._saveLocalStorage(propName, JSON.stringify(val))
+      this._saveLocalStorage(propName, val)
     }
   }
 
@@ -87,16 +96,15 @@ class CommentApp extends Component {
     const key = 'comments'
     let comments = [...this.state.comments]
     comments.splice(index, 1)
-    this._stateChange(key, comments)
+    this._stateChange(key, comments, true)
   }
   
   handleSubmit = (data = {}) => {
     const comments = [...this.state.comments]
-    const len = comments.length
     data.id = Date.now().toString() // 时间戳作为ID
     data.timeString = this._getTimeString(0)
     comments.push(data)
-    this._stateChange('comments', comments)
+    this._stateChange('comments', comments, true)
   }
   render () {
     const {comments} = this.state
@@ -111,5 +119,7 @@ class CommentApp extends Component {
     )
   }
 }
+
+CommentApp = fnWrapLocalStorage(CommentApp, 'comments')
 
 export default CommentApp

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import './index.css'
 import ShoppingList from './shoppingList.js'
 import CommentApp from './CommentApp/CommentApp'
+import FnWrapComponent from './HigherComponent/FnWrapComponent'
 
 function Square(props) {
   const val = props.value
@@ -135,9 +136,10 @@ class Board extends Component {
     } else {
       status = 'Next player: ' + this.state.nextSide
     }
+    const NewShoppingList = FnWrapComponent(ShoppingList)
     return (
       <div>
-        <ShoppingList name='[shopping list test]' />
+        <NewShoppingList name='[shopping list test]' />
         <hr />
         <div className="status">{status}</div>
         {
@@ -182,7 +184,7 @@ class Game extends Component {
 }
 
 // ========================================
-
+// 游戏 五子棋
 // ReactDOM.render(
 //   <Game />,
 //   document.getElementById('root')

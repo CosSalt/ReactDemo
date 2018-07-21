@@ -35,16 +35,15 @@ class Comment extends Component {
       let newContent = this._getReplaceStr(content)
       commentContent = (
         <p className='comment-content'
-          dangerouslySetInnerHTML={{__html: newContent}} />
+          dangerouslySetInnerHTML={{__html: newContent}} /> // 类似 v-html 指令
       )
     } else {
-      commentContent = <p className='comment-content'> content </p>
+      commentContent = <p className='comment-content'> {content} </p>
     }
     return (
       <div className='comment'>
         <div className="comment-user">
           <span className='comment-username'>{username}</span>:
-          {/* <span dangerouslySetInnerHTML={{__html:'<hr />'}}></span> */}
         </div>
         {commentContent}
         <span className="comment-createdtime">{timeString}</span>
