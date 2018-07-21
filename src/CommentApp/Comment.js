@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react'
+import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 
 class Comment extends Component {
@@ -8,6 +8,11 @@ class Comment extends Component {
     timeString: PropTypes.string.isRequired,
     onDeleteComment: PropTypes.func.isRequired,
     index: PropTypes.number.isRequired
+  }
+
+  _getReplaceStr (str) {
+    if(!str || typeof str !== 'string') return
+    return str.replace(/`([\s\S]+?)`/g, '<code>$1</code>')
   }
 
   handleDelete = () => {
@@ -20,12 +25,14 @@ class Comment extends Component {
   render () {
     const {username, content, timeString} = this.props
     let commentContent
-    if (/`[\s\S]`/g.test(content)) {
+    if (/`[\s\S]+`/g.test(content)) {
+      let newContent = this._getReplaceStr(content)
       commentContent = (
-        <Fragment dangerouslySetInnerHTML={{__html:'<hr />' + content}} />
+        <p className='comment-content'
+          dangerouslySetInnerHTML={{__html: newContent}} />
       )
     } else {
-      commentContent = content
+      commentContent = <p className='comment-content'> content </p>
     }
     return (
       <div className='comment'>
@@ -33,7 +40,7 @@ class Comment extends Component {
           <span className='comment-username'>{username}</span>:
           {/* <span dangerouslySetInnerHTML={{__html:'<hr />'}}></span> */}
         </div>
-        <p className='comment-content'>{commentContent}</p>
+        {commentContent}
         <span className="comment-createdtime">{timeString}</span>
         <span className="comment-delete"
           onClick={this.handleDelete}
