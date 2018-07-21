@@ -12,7 +12,13 @@ class Comment extends Component {
 
   _getReplaceStr (str) {
     if(!str || typeof str !== 'string') return
-    return str.replace(/`([\s\S]+?)`/g, '<code>$1</code>')
+    // 前面的是为了简单的防止 XSS 攻击
+    return str.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+    .replace(/`([\s\S]+?)`/g, '<code>$1</code>')
   }
 
   handleDelete = () => {
