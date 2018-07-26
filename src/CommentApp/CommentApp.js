@@ -65,13 +65,12 @@ class CommentApp extends Component {
     this.props.saveData(val)
     // localStorage.setItem(key, val)
   }
-
+ 
   _stateChange(propName, val, needSave = false) {
     this.setState({
       [propName]: val
     })
     if(needSave && propName === 'comments') {
-      if(!val || val.length <= 0) debugger
       this._saveLocalStorage(propName, val)
     }
   }
