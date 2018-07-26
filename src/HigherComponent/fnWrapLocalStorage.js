@@ -18,7 +18,6 @@ const wrapLocalStorage = (WrappedComponent, name) => {
     }
 
     _saveData = (data) => {
-      console.log('fnWrapLocalStorage saving')
       try {
         // 尝试把它解析成 JSON 字符串
         localStorage.setItem(name, JSON.stringify(data))
